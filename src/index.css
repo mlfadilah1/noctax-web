@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    /* Default (Light Mode) menggunakan zinc-50, Dark Mode menggunakan abyss */
+    @apply bg-zinc-50 text-zinc-900 dark:bg-abyss dark:text-zinc-300 font-sans antialiased selection:bg-techblue selection:text-white transition-colors duration-300;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-zinc-900 dark:text-white font-bold tracking-tight;
+  }
+}

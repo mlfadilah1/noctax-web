@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4096 4096" width="4096" height="4096">
+  <defs>
+    <!-- Core Geometric Shapes Scaled for 4K Resolution -->
+    <!-- N-Shape (Pillars and Main Diagonal) -->
+    <g id="n-shape">
+      <!-- Left Pillar -->
+      <rect x="0" y="0" width="240" height="960" />
+      <!-- Right Pillar -->
+      <rect x="720" y="0" width="240" height="960" />
+      <!-- N Diagonal -->
+      <polygon points="0,0 240,0 960,960 720,960" />
+    </g>
+
+    <!-- X-Shape (Accent Diagonal) -->
+    <polygon id="x-shape" points="0,960 240,960 960,0 720,0" />
+
+    <!-- Negative Space Mask (Creates the precise gap for the blue cut) -->
+    <mask id="x-cut-mask">
+      <rect x="-1000" y="-1000" width="3000" height="3000" fill="white" />
+      <!-- Mask expanding the N diagonal slightly to cut the X -->
+      <polygon points="-112,0 352,0 1072,960 608,960" fill="black" />
+    </mask>
+  </defs>
+
+  <!-- Transparent Background (No fill) -->
+  <rect width="4096" height="4096" fill="none" />
+
+  <!-- Centered Symbol -->
+  <!-- 4096/2 = 2048 center. Symbol is 960px wide. 2048 - 480 = 1568 X offset -->
+  <g transform="translate(1568, 1100)">
+    <!-- Dark Abyss Structure -->
+    <use href="#n-shape" fill="#0A0F1F" />
+    <!-- Docker Blue Cut -->
+    <use href="#x-shape" fill="#2496ED" mask="url(#x-cut-mask)" />
+  </g>
+
+  <!-- Centered Wordmark -->
+  <text 
+    x="2048" 
+    y="2750" 
+    text-anchor="middle" 
+    font-family="'Montserrat', 'Clash Display', 'Inter', 'Helvetica Neue', 'Segoe UI', sans-serif" 
+    font-weight="900" 
+    font-size="460" 
+    letter-spacing="60" 
+    fill="#0A0F1F">
+    NOCTAX
+  </text>
+</svg>
