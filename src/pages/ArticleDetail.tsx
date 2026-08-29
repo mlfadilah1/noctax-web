@@ -10,7 +10,7 @@ export default function ArticleDetail() {
   const { data: article, isLoading, isError } = useQuery({
     queryKey: ['article', slug],
     queryFn: async () => {
-      // Endpoint ini otomatis menambahkan views_count +1 di backend Laravel
+      // Endpoint ini otomatis menambahkan views_count +1 di backend
       const res = await api.get<{success: boolean, data: Article}>(`/articles/${slug}`);
       return res.data.data;
     }
@@ -18,6 +18,14 @@ export default function ArticleDetail() {
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-techblue" /></div>;
   if (isError || !article) return <div className="min-h-screen flex items-center justify-center text-red-500 font-bold">Artikel tidak ditemukan.</div>;
+
+  // Logika Pemilihan Tanggal: Prioritaskan published_at, fallback ke created_at
+  const rawDate = article.published_at || article.created_at;
+  
+  // Mencegah error jika kedua tanggal ternyata masih kosong/null dari database
+  const displayDate = rawDate 
+    ? new Date(rawDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+    : 'Tanggal tidak tersedia';
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-12 md:py-20">
@@ -32,10 +40,10 @@ export default function ArticleDetail() {
             <Hash className="w-3 h-3" /> {article.category}
           </span>
           <span className="flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-400">
-            <Calendar className="w-4 h-4" /> {new Date(article.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+            <Calendar className="w-4 h-4" /> {displayDate}
           </span>
           <span className="flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-400">
-            <Eye className="w-4 h-4" /> {article.views_count}x dibaca
+            <Eye className="w-4 h-4" /> {article.views_count || 0}x dibaca
           </span>
         </div>
         
