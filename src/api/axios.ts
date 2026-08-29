@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Buat instance axios dengan konfigurasi dasar
 const api = axios.create({
-  baseURL: 'https://noctax-api.vercel.app/api', // Sesuaikan dengan port backend Laravel kamu
+  baseURL: 'https://noctax-api.noctaxstudio.workers.dev/api', // Sesuaikan dengan port backend Laravel kamu
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',

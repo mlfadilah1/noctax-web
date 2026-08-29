@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Save, Plus, Trash2, Loader2, ImagePlus } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Loader2, Link as LinkIcon, CheckCircle2 } from 'lucide-react';
 import api from '../../../api/axios';
 import type { Project } from '../../../types';
 
@@ -9,6 +9,7 @@ export default function ProjectEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [toastMsg, setToastMsg] = useState('');
   
   const [formData, setFormData] = useState({
     title: '', tagline: '', problem_statement: '',
@@ -17,9 +18,12 @@ export default function ProjectEdit() {
     is_featured: false 
   });
 
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [features, setFeatures] = useState<string[]>(['']);
   const [techStack, setTechStack] = useState<string[]>(['']);
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+  };
 
   const { isLoading: isFetching } = useQuery({
     queryKey: ['admin-project', id],
@@ -36,7 +40,6 @@ export default function ProjectEdit() {
         thumbnail_url: project.thumbnail_url || '',
         demo_link: project.demo_link || '', 
         github_link: project.github_link || '',
-        // PERBAIKAN TYPESCRIPT: Menggunakan Boolean() agar aman dari bentrok tipe data
         is_featured: Boolean(project.is_featured) 
       });
       
@@ -66,49 +69,36 @@ export default function ProjectEdit() {
   };
 
   const updateMutation = useMutation({
-    mutationFn: async (dataToSubmit: FormData) => {
-      return await api.post(`/admin/projects/${id}`, dataToSubmit, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-    },
+    mutationFn: async (dataToSubmit: Record<string, unknown>) => await api.put(`/admin/projects/${id}`, dataToSubmit),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-projects'] });
-      navigate('/admin/projects');
+      showToast('Proyek berhasil diperbarui!');
+      setTimeout(() => navigate('/admin/projects'), 1500);
     },
-    onError: () => alert('Gagal memperbarui proyek! Pastikan format gambar sesuai.')
+    onError: () => alert('Gagal memperbarui proyek!')
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const dataToSend = new FormData();
-    dataToSend.append('title', formData.title);
-    dataToSend.append('tagline', formData.tagline);
-    dataToSend.append('problem_statement', formData.problem_statement);
-    dataToSend.append('season', String(formData.season));
-    dataToSend.append('status', formData.status);
-    dataToSend.append('demo_link', formData.demo_link);
-    dataToSend.append('github_link', formData.github_link);
-    
-    // Kirim is_featured
-    dataToSend.append('is_featured', formData.is_featured ? '1' : '0'); 
-    
-    dataToSend.append('_method', 'PUT'); 
-    
-    if (thumbnailFile) {
-      dataToSend.append('thumbnail', thumbnailFile);
-    }
-
-    features.filter(f => f.trim() !== '').forEach(f => dataToSend.append('features[]', f));
-    techStack.filter(t => t.trim() !== '').forEach(t => dataToSend.append('tech_stack[]', t));
-
-    updateMutation.mutate(dataToSend);
+    const payload = {
+      ...formData,
+      features: features.filter(f => f.trim() !== ''),
+      tech_stack: techStack.filter(t => t.trim() !== '')
+    };
+    updateMutation.mutate(payload);
   };
 
   if (isFetching) return <div className="p-20 flex justify-center"><Loader2 className="w-10 h-10 animate-spin text-techblue" /></div>;
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl space-y-6 relative">
+      {toastMsg && (
+        <div className="fixed bottom-6 right-6 z-[100] flex items-center gap-2 bg-green-500 text-white px-5 py-3 rounded-xl shadow-2xl animate-in slide-in-from-bottom-5">
+          <CheckCircle2 className="w-5 h-5" />
+          <span className="font-bold">{toastMsg}</span>
+        </div>
+      )}
+
       <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-zinc-500 hover:text-techblue font-medium mb-4">
         <ArrowLeft className="w-4 h-4" /> Batal & Kembali
       </button>
@@ -125,19 +115,14 @@ export default function ProjectEdit() {
           </div>
 
           <div className="col-span-2 md:col-span-1">
-            <label className="block text-sm mb-2 dark:text-zinc-300">Ganti Thumbnail (Kosongkan jika tidak diganti)</label>
-            <div className="flex items-center gap-3">
-              {formData.thumbnail_url && !thumbnailFile && (
-                <img src={formData.thumbnail_url} alt="Preview" className="w-12 h-12 object-cover rounded-lg border border-zinc-200 dark:border-white/10" />
-              )}
-              <label className="flex-1 cursor-pointer flex items-center justify-center gap-2 w-full p-3 rounded-xl border border-dashed border-techblue/50 bg-techblue/5 text-techblue hover:bg-techblue/10 transition-colors">
-                <ImagePlus className="w-5 h-5" />
-                <span className="text-sm font-bold truncate">
-                  {thumbnailFile ? thumbnailFile.name : 'Pilih Gambar Baru'}
-                </span>
-                <input type="file" accept="image/*" onChange={e => setThumbnailFile(e.target.files?.[0] || null)} className="hidden" />
-              </label>
+            <label className="block text-sm mb-2 dark:text-zinc-300">URL Gambar Thumbnail</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <LinkIcon className="h-5 w-5 text-zinc-400" />
+              </div>
+              <input required type="url" value={formData.thumbnail_url} placeholder="https://github.com/..." onChange={e => setFormData({...formData, thumbnail_url: e.target.value})} className="w-full pl-10 p-3 rounded-xl border dark:border-white/10 bg-zinc-50 dark:bg-abyss dark:text-white" />
             </div>
+             <p className="text-xs text-zinc-500 mt-2">Paste URL dari GitHub Issues atau Imgur.</p>
           </div>
 
           <div className="col-span-2">

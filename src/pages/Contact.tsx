@@ -7,7 +7,7 @@ export default function Contact() {
     const [success, setSuccess] = useState(false);
     const [form, setForm] = useState({
         sender_name: '',
-        sender_contact: '', // Sesuai dengan DB Schema diagram
+        sender_contact: '', 
         subject: '',
         message: ''
     });
@@ -16,7 +16,9 @@ export default function Contact() {
         e.preventDefault();
         setLoading(true);
         try {
-            await api.post('/messages', form);
+            // PERUBAHAN ADA DI BARIS INI: Menggunakan '/contact' bukan '/messages'
+            await api.post('/contact', form);
+            
             setSuccess(true);
             setForm({ sender_name: '', sender_contact: '', subject: '', message: '' });
         } catch (error) {

@@ -1,19 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, Trash2, Loader2, ImagePlus } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Loader2, Link as LinkIcon, CheckCircle2 } from 'lucide-react';
 import api from '../../../api/axios';
 
 export default function ProjectCreate() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
   
   const [formData, setFormData] = useState({
     title: '', tagline: '', problem_statement: '',
     season: 1, status: 'planning', demo_link: '', github_link: '',
-    is_featured: false // TAMBAHAN STATE IS_FEATURED
+    is_featured: false, thumbnail_url: '' 
   });
-
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
 
   const [features, setFeatures] = useState<string[]>(['']);
   const [techStack, setTechStack] = useState<string[]>(['']);
@@ -40,39 +39,31 @@ export default function ProjectCreate() {
     e.preventDefault();
     setLoading(true);
     try {
-      const dataToSend = new FormData();
-      dataToSend.append('title', formData.title);
-      dataToSend.append('tagline', formData.tagline);
-      dataToSend.append('problem_statement', formData.problem_statement);
-      dataToSend.append('season', String(formData.season));
-      dataToSend.append('status', formData.status);
-      dataToSend.append('demo_link', formData.demo_link);
-      dataToSend.append('github_link', formData.github_link);
-      
-      // Kirim is_featured sebagai '1' (true) atau '0' (false)
-      dataToSend.append('is_featured', formData.is_featured ? '1' : '0'); 
-      
-      if (thumbnailFile) {
-        dataToSend.append('thumbnail', thumbnailFile);
-      }
+      const payload = {
+        ...formData,
+        features: features.filter(f => f.trim() !== ''),
+        tech_stack: techStack.filter(t => t.trim() !== '')
+      };
 
-      features.filter(f => f.trim() !== '').forEach(f => dataToSend.append('features[]', f));
-      techStack.filter(t => t.trim() !== '').forEach(t => dataToSend.append('tech_stack[]', t));
-
-      await api.post('/admin/projects', dataToSend, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      navigate('/admin/projects');
+      await api.post('/admin/projects', payload);
+      setToastMsg('Proyek berhasil dipublikasikan!');
+      setTimeout(() => navigate('/admin/projects'), 1500);
     } catch (error) {
       console.error(error);
-      alert('Gagal menyimpan proyek! Pastikan format gambar benar (JPG/PNG).');
-    } finally {
+      alert('Gagal menyimpan proyek!');
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl space-y-6 relative">
+      {toastMsg && (
+        <div className="fixed bottom-6 right-6 z-[100] flex items-center gap-2 bg-green-500 text-white px-5 py-3 rounded-xl shadow-2xl animate-in slide-in-from-bottom-5">
+          <CheckCircle2 className="w-5 h-5" />
+          <span className="font-bold">{toastMsg}</span>
+        </div>
+      )}
+
       <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-zinc-500 hover:text-techblue font-medium mb-4">
         <ArrowLeft className="w-4 h-4" /> Batal & Kembali
       </button>
@@ -89,16 +80,14 @@ export default function ProjectCreate() {
           </div>
 
           <div className="col-span-2 md:col-span-1">
-            <label className="block text-sm mb-2 dark:text-zinc-300">Thumbnail / Banner Proyek</label>
-            <div className="flex items-center gap-3">
-              <label className="flex-1 cursor-pointer flex items-center justify-center gap-2 w-full p-3 rounded-xl border border-dashed border-techblue/50 bg-techblue/5 text-techblue hover:bg-techblue/10 transition-colors">
-                <ImagePlus className="w-5 h-5" />
-                <span className="text-sm font-bold truncate">
-                  {thumbnailFile ? thumbnailFile.name : 'Pilih Gambar (JPG/PNG)'}
-                </span>
-                <input required type="file" accept="image/*" onChange={e => setThumbnailFile(e.target.files?.[0] || null)} className="hidden" />
-              </label>
+            <label className="block text-sm mb-2 dark:text-zinc-300">URL Gambar Thumbnail</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <LinkIcon className="h-5 w-5 text-zinc-400" />
+              </div>
+              <input required type="url" placeholder="https://github.com/..." onChange={e => setFormData({...formData, thumbnail_url: e.target.value})} className="w-full pl-10 p-3 rounded-xl border dark:border-white/10 bg-zinc-50 dark:bg-abyss dark:text-white" />
             </div>
+            <p className="text-xs text-zinc-500 mt-2">Paste URL dari GitHub Issues atau Imgur.</p>
           </div>
 
           <div className="col-span-2">
@@ -134,7 +123,6 @@ export default function ProjectCreate() {
             <textarea rows={4} placeholder="Masalah apa yang diselesaikan proyek ini..." onChange={e => setFormData({...formData, problem_statement: e.target.value})} className="w-full p-3 rounded-xl border dark:border-white/10 bg-zinc-50 dark:bg-abyss dark:text-white"></textarea>
           </div>
 
-          {/* CHECKBOX PROYEK UNGGULAN (FEATURED) */}
           <div className="col-span-2 flex items-center gap-4 p-5 bg-techblue/5 border border-techblue/20 rounded-xl">
             <input 
               type="checkbox" 

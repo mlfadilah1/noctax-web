@@ -1,22 +1,29 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, CheckCircle2 } from 'lucide-react';
 import api from '../../../api/axios';
 
 export default function ArticleCreate() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [toastMsg, setToastMsg] = useState('');
   
   const [formData, setFormData] = useState({
     title: '', category: '', status: 'draft', content: ''
   });
 
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+  };
+
   const saveMutation = useMutation({
     mutationFn: async (newData: typeof formData) => await api.post('/admin/articles', newData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
-      navigate('/admin/articles');
+      showToast('Artikel berhasil disimpan!');
+      // Beri jeda 1.5 detik agar pop-up terbaca sebelum pindah halaman
+      setTimeout(() => navigate('/admin/articles'), 1500);
     },
     onError: () => alert('Gagal menyimpan artikel!')
   });
@@ -27,7 +34,14 @@ export default function ArticleCreate() {
   };
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl space-y-6 relative">
+      {toastMsg && (
+        <div className="fixed bottom-6 right-6 z-[100] flex items-center gap-2 bg-green-500 text-white px-5 py-3 rounded-xl shadow-2xl animate-in slide-in-from-bottom-5">
+          <CheckCircle2 className="w-5 h-5" />
+          <span className="font-bold">{toastMsg}</span>
+        </div>
+      )}
+
       <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-zinc-500 hover:text-techblue font-medium mb-4">
         <ArrowLeft className="w-4 h-4" /> Batal & Kembali
       </button>

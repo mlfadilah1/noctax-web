@@ -1,15 +1,16 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
-import type { Project, PaginatedResponse } from '../types';
+import type { Project } from '../types';
 import { Loader2, ArrowRight } from 'lucide-react';
 
 export default function Projects() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['all-projects'],
     queryFn: async () => {
-      const res = await api.get<PaginatedResponse<Project>>('/projects');
-      return res.data.data.data;
+      // FIX EXPRESS: Cukup res.data.data
+      const res = await api.get('/projects');
+      return res.data.data;
     }
   });
 
@@ -27,7 +28,7 @@ export default function Projects() {
       {isLoading && (
         <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-techblue" /></div>
       )}
-      
+
       {isError && (
         <div className="text-center py-20 text-red-500 bg-red-50 dark:bg-red-400/10 rounded-xl">
           Gagal mengambil data proyek.
@@ -36,7 +37,7 @@ export default function Projects() {
 
       {!isLoading && !isError && data && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {data.map((project) => (
+          {data.map((project: Project) => (
             <Link to={`/projects/${project.slug}`} key={project.id} className="group flex flex-col bg-white dark:bg-abyss-light border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden hover:border-techblue dark:hover:border-techblue/50 transition-all hover:-translate-y-2 shadow-sm hover:shadow-lg">
               <div className="aspect-video w-full bg-zinc-200 dark:bg-zinc-900 relative overflow-hidden">
                 <img src={project.thumbnail_url} alt={project.title} className="object-cover w-full h-full opacity-90 dark:opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/axios';
 import type { Message, PaginatedResponse } from '../../types';
@@ -5,6 +6,12 @@ import { Loader2, Mail, Trash2, CheckCircle2 } from 'lucide-react';
 
 export default function Messages() {
   const queryClient = useQueryClient();
+  const [toastMsg, setToastMsg] = useState('');
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(''), 3000);
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-messages'],
@@ -16,16 +23,29 @@ export default function Messages() {
 
   const markReadMutation = useMutation({
     mutationFn: async (id: number) => await api.patch(`/admin/messages/${id}/read`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-messages'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-messages'] });
+      showToast('Pesan ditandai sudah dibaca!');
+    }
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => await api.delete(`/admin/messages/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-messages'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-messages'] });
+      showToast('Pesan berhasil dihapus!');
+    }
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {toastMsg && (
+        <div className="fixed bottom-6 right-6 z-[100] flex items-center gap-2 bg-green-500 text-white px-5 py-3 rounded-xl shadow-2xl animate-in slide-in-from-bottom-5">
+          <CheckCircle2 className="w-5 h-5" />
+          <span className="font-bold">{toastMsg}</span>
+        </div>
+      )}
+
       <div className="bg-white dark:bg-abyss-light p-6 rounded-2xl border border-zinc-200 dark:border-white/10 shadow-sm">
         <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">Inbox Pesan Kontak</h2>
         <p className="text-sm text-zinc-500">Pesan langsung dari pengunjung web Noctax.</p>

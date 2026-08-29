@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
-import type { Article, PaginatedResponse } from '../types';
+import type { Article } from '../types';
 import { Loader2, Calendar, Eye } from 'lucide-react';
 
 // Ekstensi tipe sementara untuk memastikan TypeScript mengenali published_at 
@@ -12,8 +12,12 @@ export default function Articles() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['all-articles'],
     queryFn: async () => {
-      const res = await api.get<PaginatedResponse<ArticleItem>>('/articles');
-      return res.data.data.data;
+      // Beri tahu TypeScript bahwa struktur JSON Express adalah { success, data: Array }
+      const res = await api.get<{ success: boolean; data: ArticleItem[] }>('/articles');
+      
+      // res.data = bawaan Axios
+      // .data = isi array artikel kita
+      return res.data.data; 
     }
   });
 
