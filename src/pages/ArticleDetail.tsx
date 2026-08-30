@@ -2,8 +2,13 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
 import type { Article } from '../types';
-import ReactMarkdown from 'react-markdown';
 import { Loader2, ArrowLeft, Calendar, Eye, Hash } from 'lucide-react';
+
+// Import Markdown & Math Plugins
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 
 export default function ArticleDetail() {
   const { slug } = useParams();
@@ -11,6 +16,7 @@ export default function ArticleDetail() {
   const { data: article, isLoading, isError } = useQuery({
     queryKey: ['article', slug],
     queryFn: async () => {
+      // Endpoint ini otomatis menambahkan views_count +1 di backend
       const res = await api.get<{success: boolean, data: Article}>(`/articles/${slug}`);
       return res.data.data;
     }
@@ -19,7 +25,10 @@ export default function ArticleDetail() {
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-techblue" /></div>;
   if (isError || !article) return <div className="min-h-screen flex items-center justify-center text-red-500 font-bold">Artikel tidak ditemukan.</div>;
 
+  // Logika Pemilihan Tanggal: Prioritaskan published_at, fallback ke created_at
   const rawDate = article.published_at || article.created_at;
+  
+  // Mencegah error jika kedua tanggal ternyata masih kosong/null dari database
   const displayDate = rawDate 
     ? new Date(rawDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
     : 'Tanggal tidak tersedia';
@@ -49,9 +58,13 @@ export default function ArticleDetail() {
         </h1>
       </div>
 
-      {/* REACT MARKDOWN DITERAPKAN DI SINI */}
+      {/* Bagian Render Konten Artikel dengan Plugin Markdown & Math */}
       <article className="prose prose-zinc dark:prose-invert prose-lg max-w-none prose-headings:text-zinc-900 dark:prose-headings:text-white prose-a:text-techblue hover:prose-a:text-techblue-hover">
-        <ReactMarkdown>{article.content}</ReactMarkdown>
+        <div className="text-zinc-700 dark:text-zinc-300 leading-relaxed font-sans">
+          <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+            {article.content}
+          </ReactMarkdown>
+        </div>
       </article>
 
     </div>
