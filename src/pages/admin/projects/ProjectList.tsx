@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../../api/axios';
 import type { Project, PaginatedResponse } from '../../../types';
-import { Loader2, Plus, Edit, Trash2, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Loader2, Plus, Edit, Trash2, CheckCircle2, AlertTriangle, Star } from 'lucide-react';
 
 export default function ProjectList() {
   const queryClient = useQueryClient();
@@ -60,6 +60,7 @@ export default function ProjectList() {
           <table className="w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
             <thead className="bg-zinc-50 dark:bg-white/5 font-bold uppercase text-xs">
               <tr>
+                <th className="px-6 py-4 w-12 text-center">No</th>
                 <th className="px-6 py-4">Judul Proyek</th>
                 <th className="px-6 py-4">Season</th>
                 <th className="px-6 py-4">Status</th>
@@ -67,15 +68,33 @@ export default function ProjectList() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-white/5">
-              {data?.map(project => (
+              {data
+                // FIX: Pengurutan Ganda (Double Sort) agar Featured benar-benar naik ke posisi 1
+                ?.sort((a, b) => Number(b.is_featured || 0) - Number(a.is_featured || 0))
+                .map((project, index) => (
                 <tr key={project.id} className="hover:bg-zinc-50 dark:hover:bg-white/[0.02]">
-                  <td className="px-6 py-4 font-bold text-zinc-900 dark:text-white">{project.title}</td>
+                  <td className="px-6 py-4 font-mono text-center text-zinc-400">{index + 1}</td>
+                  
+                  <td className="px-6 py-4 font-bold text-zinc-900 dark:text-white">
+                    <div className="flex items-center gap-2">
+                      {project.title}
+                      {/* LABEL VISUAL UNTUK FEATURED */}
+                      {(Number(project.is_featured) === 1 || project.is_featured === true) && (
+                        <span className="flex items-center gap-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400 text-[10px] uppercase font-extrabold rounded-md">
+                          <Star className="w-3 h-3 fill-current" /> Featured
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  
                   <td className="px-6 py-4">Season {project.season}</td>
+                  
                   <td className="px-6 py-4">
-                    <span className="px-2.5 py-1 bg-zinc-100 dark:bg-white/5 rounded-md border border-zinc-200 dark:border-white/10">
+                    <span className="px-2.5 py-1 bg-zinc-100 dark:bg-white/5 rounded-md border border-zinc-200 dark:border-white/10 text-xs font-bold">
                       {project.status.replace('_', ' ').toUpperCase()}
                     </span>
                   </td>
+                  
                   <td className="px-6 py-4 flex justify-end gap-2">
                     <Link to={`/admin/projects/edit/${project.id}`} className="p-2 text-zinc-500 hover:text-techblue hover:bg-techblue/10 rounded-lg transition-colors"><Edit className="w-4 h-4" /></Link>
                     <button onClick={() => setDeleteModal(project.id)} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>

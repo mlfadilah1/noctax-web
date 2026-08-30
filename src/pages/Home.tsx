@@ -13,9 +13,12 @@ export default function Home() {
   const { data: projects, isLoading: loadProjects } = useQuery({
     queryKey: ['public-projects'],
     queryFn: async () => {
-      // FIX EXPRESS: Cukup res.data.data (tidak perlu .data.data.data seperti Laravel)
       const res = await api.get('/projects');
-      return res.data.data.slice(0, 3);
+      const allProjects = res.data.data;
+      
+      // FIX FEATURED: Filter HANYA yang is_featured === 1 atau true, lalu ambil 3 teratas
+      const featuredOnly = allProjects.filter((p: Project) => Number(p.is_featured) === 1 || p.is_featured === true);
+      return featuredOnly.slice(0, 3);
     }
   });
 
@@ -24,7 +27,6 @@ export default function Home() {
   const { data: articles, isLoading: loadArticles } = useQuery({
     queryKey: ['public-articles'],
     queryFn: async () => {
-      // FIX EXPRESS: Cukup res.data.data
       const res = await api.get('/articles');
       return res.data.data.slice(0, 3);
     }
@@ -70,8 +72,6 @@ export default function Home() {
 
           {/* SKILL CATEGORIES WITH ICONS */}
           <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-12 text-left">
-
-            {/* Kotak 1: Tech Stack */}
             <div className="p-5 bg-white dark:bg-abyss-light border border-zinc-200 dark:border-white/10 rounded-2xl shadow-sm">
               <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                 <Code2 className="w-4 h-4" /> Tech Stack & Development
@@ -84,7 +84,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Kotak 2: Design & Prototyping (BARU) */}
             <div className="p-5 bg-white dark:bg-abyss-light border border-zinc-200 dark:border-white/10 rounded-2xl shadow-sm">
               <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                 <Palette className="w-4 h-4" /> UI/UX & Design
@@ -97,7 +96,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Kotak 3: Tools & Workspace */}
             <div className="p-5 bg-white dark:bg-abyss-light border border-zinc-200 dark:border-white/10 rounded-2xl shadow-sm">
               <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                 <Wrench className="w-4 h-4" /> Tools & Workspace
@@ -110,7 +108,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Kotak 4: Database & System */}
             <div className="p-5 bg-white dark:bg-abyss-light border border-zinc-200 dark:border-white/10 rounded-2xl shadow-sm">
               <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                 <Database className="w-4 h-4" /> System & Database
@@ -122,7 +119,6 @@ export default function Home() {
                 <span className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-100 dark:bg-white/5 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-white/5 rounded-lg text-sm font-medium"><Cpu className="w-3.5 h-3.5" /> IoT Architecture</span>
               </div>
             </div>
-
           </div>
 
           <div className="flex flex-wrap justify-center items-center gap-4">
@@ -136,7 +132,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SISA KODINGAN KE BAWAH TETAP SAMA SEPERTI ASLINYA... */}
       <section className="max-w-4xl mx-auto px-6 w-full">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-4">Professional Track Record</h2>

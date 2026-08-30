@@ -66,7 +66,7 @@ export default function PublicLayout({ isDark, toggleTheme }: Props) {
           
           <div className="text-center md:text-left">
             <p className="font-bold text-zinc-900 dark:text-white text-base mb-1">Noctax Studio</p>
-            <p className="text-zinc-500 text-sm">&copy; {new Date().getFullYear()} All rights reserved. Built with Laravel & React.</p>
+            <p className="text-zinc-500 text-sm">&copy; {new Date().getFullYear()} All rights reserved.</p>
           </div>
 
           {/* IKON SOSIAL MEDIA (SVG BRAND ASLI) */}
