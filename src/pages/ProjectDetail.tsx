@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
 import type { Project } from '../types';
-// Hapus 'Github', ganti dengan 'Code' agar aman dari error versi Lucide
+import ReactMarkdown from 'react-markdown';
 import { Loader2, ArrowLeft, Code, Globe, Eye, CheckCircle2 } from 'lucide-react';
 
 export default function ProjectDetail() {
@@ -22,12 +22,10 @@ export default function ProjectDetail() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-12 md:py-20">
       
-      {/* Navigasi Kembali */}
       <Link to="/projects" className="inline-flex items-center gap-2 text-zinc-500 hover:text-techblue transition-colors mb-8 font-medium">
         <ArrowLeft className="w-5 h-5" /> Kembali ke Portofolio
       </Link>
 
-      {/* Header Info */}
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-4">
           <span className="px-3 py-1 bg-techblue/10 text-techblue rounded-full text-xs font-bold border border-techblue/20">
@@ -41,19 +39,18 @@ export default function ProjectDetail() {
         <p className="text-xl text-zinc-600 dark:text-zinc-400">{project.tagline}</p>
       </div>
 
-      {/* Gambar Thumbnail */}
       <div className="aspect-video w-full rounded-2xl overflow-hidden mb-12 border border-zinc-200 dark:border-white/10 shadow-lg">
         <img src={project.thumbnail_url} alt={project.title} className="w-full h-full object-cover" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-        {/* Kolom Konten Utama (Kiri) */}
         <div className="md:col-span-2 space-y-10">
           <section>
-            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">Problem Statement</h2>
-            <div className="prose prose-zinc dark:prose-invert text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              {project.problem_statement}
-            </div>
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">Description</h2>
+            {/* REACT MARKDOWN DITERAPKAN DI SINI */}
+            <article className="prose prose-zinc dark:prose-invert max-w-none prose-headings:text-zinc-900 dark:prose-headings:text-white text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              <ReactMarkdown>{project.problem_statement}</ReactMarkdown>
+            </article>
           </section>
 
           <section>
@@ -69,7 +66,6 @@ export default function ProjectDetail() {
           </section>
         </div>
 
-        {/* Kolom Sidebar (Kanan) */}
         <div className="space-y-8">
           <div className="bg-zinc-50 dark:bg-abyss-light p-6 rounded-2xl border border-zinc-200 dark:border-white/10">
             <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4">Teknologi Terpakai</h3>
@@ -90,7 +86,6 @@ export default function ProjectDetail() {
             )}
             {project.github_link && (
               <a href={project.github_link} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-900 dark:bg-white/10 dark:hover:bg-white/20 text-white font-medium transition-all">
-                {/* Menggunakan icon 'Code' sebagai pengganti Github */}
                 <Code className="w-5 h-5" /> Source Code
               </a>
             )}

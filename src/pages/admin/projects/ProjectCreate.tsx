@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, Trash2, Loader2, Link as LinkIcon, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Loader2, Link as LinkIcon, CheckCircle2, Eye, Edit3 } from 'lucide-react';
 import api from '../../../api/axios';
+import ReactMarkdown from 'react-markdown';
 
 export default function ProjectCreate() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
+  const [isPreview, setIsPreview] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '', tagline: '', problem_statement: '',
@@ -85,9 +87,8 @@ export default function ProjectCreate() {
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <LinkIcon className="h-5 w-5 text-zinc-400" />
               </div>
-              <input required type="url" placeholder="https://github.com/..." onChange={e => setFormData({...formData, thumbnail_url: e.target.value})} className="w-full pl-10 p-3 rounded-xl border dark:border-white/10 bg-zinc-50 dark:bg-abyss dark:text-white" />
+              <input required type="url" placeholder="https://raw.githubusercontent.com/..." onChange={e => setFormData({...formData, thumbnail_url: e.target.value})} className="w-full pl-10 p-3 rounded-xl border dark:border-white/10 bg-zinc-50 dark:bg-abyss dark:text-white" />
             </div>
-            <p className="text-xs text-zinc-500 mt-2">Paste URL dari GitHub Issues atau Imgur.</p>
           </div>
 
           <div className="col-span-2">
@@ -118,9 +119,27 @@ export default function ProjectCreate() {
             <input type="url" placeholder="https://github.com/..." onChange={e => setFormData({...formData, github_link: e.target.value})} className="w-full p-3 rounded-xl border dark:border-white/10 bg-zinc-50 dark:bg-abyss dark:text-white" />
           </div>
 
+          {/* FITUR PREVIEW UNTUK DESKRIPSI */}
           <div className="col-span-2">
-            <label className="block text-sm mb-2 dark:text-zinc-300">Problem Statement (Studi Kasus)</label>
-            <textarea rows={4} placeholder="Masalah apa yang diselesaikan proyek ini..." onChange={e => setFormData({...formData, problem_statement: e.target.value})} className="w-full p-3 rounded-xl border dark:border-white/10 bg-zinc-50 dark:bg-abyss dark:text-white"></textarea>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm dark:text-zinc-300">Description (Markdown)</label>
+              <button 
+                type="button" 
+                onClick={() => setIsPreview(!isPreview)}
+                className="flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-lg bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 hover:text-techblue transition-colors"
+              >
+                {isPreview ? <><Edit3 className="w-4 h-4" /> Mode Edit</> : <><Eye className="w-4 h-4" /> Pratinjau</>}
+              </button>
+            </div>
+            {isPreview ? (
+              <div className="w-full p-4 rounded-xl border dark:border-white/10 bg-white dark:bg-[#0a0a0a] min-h-[150px]">
+                <article className="prose prose-zinc dark:prose-invert prose-sm max-w-none">
+                  <ReactMarkdown>{formData.problem_statement || '*Belum ada deskripsi...*'}</ReactMarkdown>
+                </article>
+              </div>
+            ) : (
+              <textarea rows={6} placeholder="Deskripsi proyek ini..." onChange={e => setFormData({...formData, problem_statement: e.target.value})} className="w-full p-3 rounded-xl border dark:border-white/10 bg-zinc-50 dark:bg-abyss dark:text-white font-mono text-sm leading-relaxed"></textarea>
+            )}
           </div>
 
           <div className="col-span-2 flex items-center gap-4 p-5 bg-techblue/5 border border-techblue/20 rounded-xl">
