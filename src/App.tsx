@@ -32,10 +32,15 @@ import AdminServices from './pages/admin/AdminServices';
 import ServiceRequests from './pages/admin/ServiceRequests';
 import Messages from './pages/admin/Messages';
 
+// ==========================================
+// PENGATURAN ROUTE GUARDS (LOGIKA BARU)
+// ==========================================
+
 // Proteksi Halaman Admin (Harus Login)
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const token = localStorage.getItem('auth_token');
-  if (!token) return <Navigate to="/akses-brewok" replace />;
+  // Karena token aman di Cookie, kita gunakan 'user_role' sebagai indikator sesi aktif di Frontend
+  const role = localStorage.getItem('user_role');
+  if (!role) return <Navigate to="/akses-brewok" replace />;
   return <>{children}</>;
 };
 
@@ -46,10 +51,10 @@ const AdminOnlyRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Proteksi Halaman Login/Public (Jika sudah login, tendang ke Admin)
+// Proteksi Halaman Login (Jika sudah login, cegah akses halaman login)
 const GuestRoute = ({ children }: { children: React.ReactNode }) => {
-  const token = localStorage.getItem('auth_token');
-  if (token) return <Navigate to="/admin" replace />;
+  const role = localStorage.getItem('user_role');
+  if (role) return <Navigate to="/admin" replace />;
   return <>{children}</>;
 };
 
@@ -74,8 +79,9 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         
-        {/* PUBLIC ROUTING */}
-        <Route element={<GuestRoute><PublicLayout isDark={isDark} toggleTheme={toggleTheme} /></GuestRoute>}>
+        {/* === PUBLIC ROUTING === */}
+        {/* Menggunakan element bawaan jika tidak perlu dibungkus GuestRoute penuh */}
+        <Route element={<PublicLayout isDark={isDark} toggleTheme={toggleTheme} />}>
           <Route path="/" element={<Home />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:slug" element={<ProjectDetail />} /> 
@@ -85,16 +91,17 @@ export default function App() {
           <Route path="/contact" element={<Contact />} />
         </Route>
 
-        {/* LOGIN PAGE RAHASIA */}
+        {/* === LOGIN PAGE RAHASIA === */}
         <Route path="/akses-brewok" element={<GuestRoute><Login /></GuestRoute>} />
 
-        {/* ADMIN ROUTING */}
+        {/* === ADMIN ROUTING === */}
         <Route path="/admin" element={<ProtectedRoute><AdminLayout isDark={isDark} toggleTheme={toggleTheme} /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
           
           {/* RUTE PROFIL SAYA (Bisa diakses Admin & Petugas) */}
           <Route path="profile" element={<Profile />} />
           
+          {/* RUTE KHUSUS ADMIN (Superuser) */}
           <Route path="users" element={<AdminOnlyRoute><Users /></AdminOnlyRoute>} />
           
           <Route path="projects" element={<ProjectList />} />

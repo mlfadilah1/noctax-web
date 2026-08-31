@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Sun, Moon } from 'lucide-react'; 
+import axios from 'axios'; // Wajib diimport untuk mengecek tipe error
 import api from '../api/axios';
 
 export default function Login() {
@@ -14,6 +15,7 @@ export default function Login() {
   }, []);
 
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  
   const toggleTheme = () => {
     const html = document.documentElement;
     if (html.classList.contains('dark')) {
@@ -32,18 +34,26 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await api.post('/login', { email, password });
+      
       if (res.data.success) {
-        localStorage.setItem('auth_token', res.data.token);
-        localStorage.setItem('user_role', res.data.user.role);
+        // TOKEN TIDAK LAGI DISIMPAN DI SINI (Sudah diurus otomatis oleh Cookie)
         
-        // TAMBAHKAN BARIS INI: Simpan nama dari kolom 'name' tabel users
+        // Hanya menyimpan data tampilan untuk Frontend (UI Hint)
+        localStorage.setItem('user_role', res.data.user.role);
         localStorage.setItem('user_name', res.data.user.name); 
         
         navigate('/admin'); 
       }
     } catch (err) {
+      // 🔥 PERBAIKAN ESLINT: Tidak lagi menggunakan err: any
       console.error(err);
-      alert('Kredensial salah atau akses ditolak!');
+      if (axios.isAxiosError(err)) {
+        // Jika error berasal dari response backend (misal 422 atau 403)
+        alert(err.response?.data?.message || err.response?.data?.errors?.email?.[0] || 'Kredensial salah atau akses ditolak!');
+      } else {
+        // Jika error karena masalah jaringan atau kode frontend
+        alert('Terjadi kesalahan pada sistem.');
+      }
     } finally {
       setLoading(false);
     }
